@@ -2,15 +2,10 @@
 /**
  * opencode-workspaces — TUI Workspace Plugin for OpenCode
  *
- * Standalone workspace (git worktree) management for the OpenCode TUI.
- * Switch between git worktrees in the same TUI session, no terminal spawning.
+ * Extends the OpenCode TUI with workspace (git worktree) UX: switching,
+ * renaming, session browsing, a home dashboard, and a prompt badge.
  *
- * Features:
- *   - Sidebar: workspace list with real-time status + quick actions footer
- *   - Home screen: workspace dashboard + prompt badge
- *   - Full management route: create, rename, reset, delete, session browser
- *   - Command palette + slash commands (/ws, /ws-new, /ws-switch, etc.)
- *   - KV-persisted state (enabled flag, current workspace, custom names)
+ * Requires: OPENCODE_EXPERIMENTAL_WORKSPACES=1
  *
  * Installation (in ~/.config/opencode/tui.json):
  *   { "plugin": ["opencode-workspaces"] }
@@ -20,7 +15,7 @@
  */
 
 import type { TuiPlugin, TuiPluginModule } from "@opencode-ai/plugin/tui"
-import { HomeBadge, HomeDashboard, SidebarFooterActions, SidebarWorkspaceList } from "./components.tsx"
+import { HomeBadge, HomeDashboard, SidebarFooterActions } from "./components.tsx"
 import { buildCommands } from "./commands.ts"
 import { ManageRoute } from "./manage-route.tsx"
 import { createWsStore } from "./store.ts"
@@ -28,14 +23,20 @@ import { createWsStore } from "./store.ts"
 // ─── Plugin main ──────────────────────────────────────────────────────────────
 
 const tui: TuiPlugin = async (api) => {
-  const actions = createWsStore(api)
-  const { store } = actions
-
-  // Initial sync
-  if (store.enabled) {
-    actions.sync()
-    actions.syncSessionCounts()
+  // Require OPENCODE_EXPERIMENTAL_WORKSPACES=1 — the workspace API must be available
+  if (typeof api.client.experimental?.workspace?.list !== "function") {
+    api.ui.toast({
+      variant: "error",
+      message: "opencode-workspaces requires OPENCODE_EXPERIMENTAL_WORKSPACES=1",
+    })
+    return
   }
+
+  const actions = createWsStore(api)
+
+  // Initial sync (unconditional — no enabled flag)
+  actions.sync()
+  actions.syncSessionCounts()
 
   // ── Route ────────────────────────────────────────────────────────────────
   api.route.register([
@@ -52,19 +53,15 @@ const tui: TuiPlugin = async (api) => {
   api.slots.register({
     order: 200,
     slots: {
-      // Sidebar workspace list (append mode — rendered below session list)
-      sidebar_content(_ctx, props) {
-        return <SidebarWorkspaceList api={api} actions={actions} sessionId={props.session_id} />
-      },
-      // Sidebar footer: new/switch/manage buttons (single_winner)
+      // Sidebar footer: new/switch/manage buttons
       sidebar_footer() {
         return <SidebarFooterActions api={api} actions={actions} />
       },
-      // Home: workspace dashboard card (append mode)
+      // Home: workspace dashboard card
       home_bottom() {
         return <HomeDashboard api={api} actions={actions} />
       },
-      // Home: current workspace badge next to prompt (append mode)
+      // Home: current workspace badge next to prompt
       home_prompt_right() {
         return <HomeBadge api={api} actions={actions} />
       },

@@ -3,7 +3,7 @@ import type { TuiPluginApi } from "@opencode-ai/plugin/tui"
 import { useKeyboard } from "@opentui/solid"
 import { For, Show, createSignal } from "solid-js"
 import { STATUS_SYMBOL } from "./constants.ts"
-import { showCreateDialog, showDeleteDialog, showRenameDialog, showResetDialog } from "./dialogs.tsx"
+import { showCreateDialog, showRenameDialog } from "./dialogs.tsx"
 import { isLocal, shortDir, wsName } from "./helpers.ts"
 import type { WsActions } from "./store.ts"
 
@@ -51,16 +51,6 @@ export function ManageRoute(props: { api: TuiPluginApi; actions: WsActions }) {
         showRenameDialog(props.api, sel()!, props.actions)
         return
       }
-      if (evt.name === "R") {
-        evt.preventDefault()
-        showResetDialog(props.api, sel()!, props.actions)
-        return
-      }
-      if (evt.name === "d") {
-        evt.preventDefault()
-        showDeleteDialog(props.api, sel()!, props.actions)
-        return
-      }
     }
   })
 
@@ -77,7 +67,7 @@ export function ManageRoute(props: { api: TuiPluginApi; actions: WsActions }) {
       {/* Header */}
       <box flexDirection="row" justifyContent="space-between">
         <text fg={theme().text}>Workspaces</text>
-        <text fg={theme().textMuted}>Esc back · n new · ↑↓ navigate · Enter switch</text>
+        <text fg={theme().textMuted}>Esc back · n new · ↑↓ navigate · Enter switch · r rename</text>
       </box>
 
       {/* Workspace list */}
@@ -93,7 +83,7 @@ export function ManageRoute(props: { api: TuiPluginApi; actions: WsActions }) {
           {(ws, idx) => {
             const isSelected = () => selected() === idx()
             const status = () => store.statuses[ws.id] ?? "disconnected"
-            const sym = () => store.busy[ws.id] ? "⟳" : (STATUS_SYMBOL[status()] ?? "○")
+            const sym = () => STATUS_SYMBOL[status()] ?? "○"
             const name = () => wsName(ws, store.names)
             const count = () => store.sessionCounts[ws.id] ?? 0
             const isCurrent = () => store.currentID === ws.id
@@ -134,7 +124,6 @@ export function ManageRoute(props: { api: TuiPluginApi; actions: WsActions }) {
                     <text fg={theme().textMuted}>
                       {count()} session{count() === 1 ? "" : "s"}
                       {ws.branch ? ` · ${ws.branch}` : ""}
-                      {store.busy[ws.id] ? " · busy…" : ""}
                     </text>
                   </box>
                 </box>
@@ -170,8 +159,6 @@ export function ManageRoute(props: { api: TuiPluginApi; actions: WsActions }) {
                   <Show when={!isLocal(ws)}>
                     <box flexDirection="row" gap={2} paddingBottom={1}>
                       <text fg={theme().textMuted}>r rename</text>
-                      <text fg={theme().textMuted}>R reset</text>
-                      <text fg={theme().error}>d delete</text>
                     </box>
                   </Show>
                 </Show>
@@ -179,10 +166,6 @@ export function ManageRoute(props: { api: TuiPluginApi; actions: WsActions }) {
             )
           }}
         </For>
-      </Show>
-
-      <Show when={store.error}>
-        <text fg={theme().error}>{store.error}</text>
       </Show>
     </box>
   )

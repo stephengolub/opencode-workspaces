@@ -1,9 +1,7 @@
 import type { TuiPluginApi, TuiCommand } from "@opencode-ai/plugin/tui"
 import {
   showCreateDialog,
-  showDeleteDialog,
   showRenameDialog,
-  showResetDialog,
   showSessionsDialog,
   showSwitchDialog,
   showWsMenu,
@@ -16,6 +14,9 @@ import type { WsActions } from "./store.ts"
 /**
  * Build the full list of workspace commands for the command palette.
  * Called reactively — must only access reactive store values directly.
+ *
+ * Requires OPENCODE_EXPERIMENTAL_WORKSPACES=1 to be active.
+ * Toggle, delete, and reset are handled by the built-in OpenCode workspace UI.
  */
 export function buildCommands(api: TuiPluginApi, actions: WsActions): TuiCommand[] {
   const store = actions.store
@@ -41,26 +42,11 @@ export function buildCommands(api: TuiPluginApi, actions: WsActions): TuiCommand
       },
     },
     {
-      title: store.enabled ? "Disable workspaces" : "Enable workspaces",
-      value: "workspace.toggle",
-      category: "Workspace",
-      onSelect() {
-        const next = !store.enabled
-        actions.setEnabled(next)
-        api.ui.toast({
-          variant: "info",
-          message: next
-            ? "Workspaces enabled — Multiple worktrees shown in sidebar"
-            : "Workspaces disabled",
-        })
-      },
-    },
-    {
       title: "New workspace",
       value: "workspace.new",
       category: "Workspace",
-      enabled: store.enabled,
-      hidden: !store.enabled,
+      enabled: true,
+      hidden: false,
       slash: { name: "ws-new", aliases: ["wsn"] },
       onSelect() {
         showCreateDialog(api, actions)
@@ -70,8 +56,8 @@ export function buildCommands(api: TuiPluginApi, actions: WsActions): TuiCommand
       title: "Switch workspace",
       value: "workspace.switch",
       category: "Workspace",
-      enabled: store.enabled && store.workspaces.length > 1,
-      hidden: !store.enabled || store.workspaces.length <= 1,
+      enabled: store.workspaces.length > 1,
+      hidden: store.workspaces.length <= 1,
       slash: { name: "ws-switch", aliases: ["wss"] },
       onSelect() {
         showSwitchDialog(api, actions)
@@ -82,8 +68,8 @@ export function buildCommands(api: TuiPluginApi, actions: WsActions): TuiCommand
       value: "workspace.manage",
       category: "Workspace",
       slash: { name: "workspaces", aliases: ["wsm"] },
-      enabled: store.enabled,
-      hidden: !store.enabled,
+      enabled: true,
+      hidden: false,
       onSelect() {
         api.route.navigate("workspaces")
       },
@@ -92,8 +78,8 @@ export function buildCommands(api: TuiPluginApi, actions: WsActions): TuiCommand
       title: sessionTitle,
       value: "workspace.session",
       category: "Workspace",
-      enabled: store.enabled && !!store.currentID,
-      hidden: !store.enabled || !store.currentID,
+      enabled: !!store.currentID,
+      hidden: !store.currentID,
       slash: { name: "ws-session", aliases: ["wsc"] },
       async onSelect() {
         const session = await actions.createSession()
@@ -104,8 +90,8 @@ export function buildCommands(api: TuiPluginApi, actions: WsActions): TuiCommand
       title: "Browse workspace sessions",
       value: "workspace.sessions",
       category: "Workspace",
-      enabled: store.enabled && store.sessions.length > 0,
-      hidden: !store.enabled,
+      enabled: store.sessions.length > 0,
+      hidden: false,
       slash: { name: "ws-sessions", aliases: ["wsl"] },
       onSelect() {
         showSessionsDialog(api, actions)
@@ -119,26 +105,6 @@ export function buildCommands(api: TuiPluginApi, actions: WsActions): TuiCommand
       hidden: !isSandbox,
       onSelect() {
         if (current) showRenameDialog(api, current, actions)
-      },
-    },
-    {
-      title: "Reset current workspace",
-      value: "workspace.reset",
-      category: "Workspace",
-      enabled: !!isSandbox,
-      hidden: !isSandbox,
-      onSelect() {
-        if (current) showResetDialog(api, current, actions)
-      },
-    },
-    {
-      title: "Delete current workspace",
-      value: "workspace.delete",
-      category: "Workspace",
-      enabled: !!isSandbox,
-      hidden: !isSandbox,
-      onSelect() {
-        if (current) showDeleteDialog(api, current, actions)
       },
     },
   ]

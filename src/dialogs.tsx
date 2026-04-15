@@ -36,36 +36,6 @@ export function showRenameDialog(api: TuiPluginApi, ws: Workspace, actions: WsAc
   ))
 }
 
-export function showDeleteDialog(api: TuiPluginApi, ws: Workspace, actions: WsActions) {
-  const name = wsName(ws, actions.store.names)
-  api.ui.dialog.replace(() => (
-    <api.ui.DialogConfirm
-      title="Delete workspace"
-      message={`Delete "${name}"?\n\nThis removes the git worktree and its branch. This cannot be undone.`}
-      onConfirm={() => {
-        api.ui.dialog.clear()
-        if (ws.directory) actions.deleteWorkspace(ws.id, ws.directory)
-      }}
-      onCancel={() => api.ui.dialog.clear()}
-    />
-  ))
-}
-
-export function showResetDialog(api: TuiPluginApi, ws: Workspace, actions: WsActions) {
-  const name = wsName(ws, actions.store.names)
-  api.ui.dialog.replace(() => (
-    <api.ui.DialogConfirm
-      title="Reset workspace"
-      message={`Reset "${name}"?\n\nHard-resets branch to default. Uncommitted changes are lost and sessions archived.`}
-      onConfirm={() => {
-        api.ui.dialog.clear()
-        if (ws.directory) actions.resetWorkspace(ws.id, ws.directory)
-      }}
-      onCancel={() => api.ui.dialog.clear()}
-    />
-  ))
-}
-
 export function showSwitchDialog(api: TuiPluginApi, actions: WsActions) {
   const options = actions.store.workspaces.map((ws) => {
     const status = actions.store.statuses[ws.id] ?? "disconnected"
@@ -160,9 +130,7 @@ export function showSessionsDialog(api: TuiPluginApi, actions: WsActions) {
 
 // ─── Workspace sub-picker menu ────────────────────────────────────────────────
 
-export type WsMenuValue =
-  | "new" | "switch" | "session" | "sessions" | "manage"
-  | "rename" | "reset" | "delete" | "toggle"
+export type WsMenuValue = "new" | "switch" | "session" | "sessions" | "manage" | "rename"
 
 export function showWsMenu(api: TuiPluginApi, actions: WsActions) {
   const store = actions.store
@@ -180,7 +148,6 @@ export function showWsMenu(api: TuiPluginApi, actions: WsActions) {
       title: "New workspace",
       value: "new",
       description: "Create a git worktree on a new branch",
-      disabled: !store.enabled,
     },
     {
       title: "Switch workspace",
@@ -188,13 +155,13 @@ export function showWsMenu(api: TuiPluginApi, actions: WsActions) {
       description: store.workspaces.length > 1
         ? `Currently: ${currentLabel ?? "none"}`
         : "No other workspaces to switch to",
-      disabled: !store.enabled || store.workspaces.length <= 1,
+      disabled: store.workspaces.length <= 1,
     },
     {
       title: "New session",
       value: "session",
       description: currentLabel ? `In ${currentLabel}` : "Select a workspace first",
-      disabled: !store.enabled || !store.currentID,
+      disabled: !store.currentID,
     },
     {
       title: "Browse sessions",
@@ -202,40 +169,18 @@ export function showWsMenu(api: TuiPluginApi, actions: WsActions) {
       description: store.sessions.length > 0
         ? `${store.sessions.length} sessions across workspaces`
         : "No sessions yet",
-      disabled: !store.enabled || store.sessions.length === 0,
+      disabled: store.sessions.length === 0,
     },
     {
       title: "Manage workspaces",
       value: "manage",
-      description: "Full list, rename, reset, delete",
-      disabled: !store.enabled,
+      description: "Full list, rename, switch",
     },
     {
       title: "Rename workspace",
       value: "rename",
       description: isSandbox ? `Rename "${currentLabel}"` : "Only available for sandbox workspaces",
       disabled: !isSandbox,
-    },
-    {
-      title: "Reset workspace",
-      value: "reset",
-      description: isSandbox
-        ? `Hard-reset "${currentLabel}" to default branch`
-        : "Only available for sandbox workspaces",
-      disabled: !isSandbox,
-    },
-    {
-      title: "Delete workspace",
-      value: "delete",
-      description: isSandbox ? `Remove "${currentLabel}" worktree` : "Only available for sandbox workspaces",
-      disabled: !isSandbox,
-    },
-    {
-      title: store.enabled ? "Disable workspaces" : "Enable workspaces",
-      value: "toggle",
-      description: store.enabled
-        ? "Collapse back to flat session list"
-        : "Show multiple worktrees in sidebar",
     },
   ]
 
@@ -259,19 +204,6 @@ export function showWsMenu(api: TuiPluginApi, actions: WsActions) {
           api.route.navigate("workspaces")
         } else if (val === "rename" && current) {
           showRenameDialog(api, current, actions)
-        } else if (val === "reset" && current) {
-          showResetDialog(api, current, actions)
-        } else if (val === "delete" && current) {
-          showDeleteDialog(api, current, actions)
-        } else if (val === "toggle") {
-          const next = !store.enabled
-          actions.setEnabled(next)
-          api.ui.toast({
-            variant: "info",
-            message: next
-              ? "Workspaces enabled — Multiple worktrees shown in sidebar"
-              : "Workspaces disabled",
-          })
         }
       }}
     />

@@ -4,9 +4,8 @@ import { createMockApi, localWs, sandboxWs } from "./mock-api.js"
 import { createWsStore } from "../src/store.js"
 import { KV } from "../src/constants.js"
 
-function setup(options: { enabled?: boolean; workspaces?: never[]; currentID?: string } = {}) {
+function setup(options: { workspaces?: never[]; currentID?: string } = {}) {
   const api = createMockApi()
-  if (options.enabled !== undefined) api.kv.set(KV.enabled, options.enabled)
   if (options.currentID !== undefined) api.kv.set(KV.current, options.currentID)
   const actions = createWsStore(api as never)
   if (options.workspaces) {
@@ -16,6 +15,30 @@ function setup(options: { enabled?: boolean; workspaces?: never[]; currentID?: s
   }
   return { api, actions }
 }
+
+// ─── Removed commands ─────────────────────────────────────────────────────────
+
+describe("buildCommands — removed commands", () => {
+  it("does NOT include workspace.toggle", () => {
+    const { api, actions } = setup()
+    const cmds = buildCommands(api as never, actions)
+    expect(cmds.find((c) => c.value === "workspace.toggle")).toBeUndefined()
+  })
+
+  it("does NOT include workspace.delete", () => {
+    const { api, actions } = setup()
+    const cmds = buildCommands(api as never, actions)
+    expect(cmds.find((c) => c.value === "workspace.delete")).toBeUndefined()
+  })
+
+  it("does NOT include workspace.reset", () => {
+    const { api, actions } = setup()
+    const cmds = buildCommands(api as never, actions)
+    expect(cmds.find((c) => c.value === "workspace.reset")).toBeUndefined()
+  })
+})
+
+// ─── Always visible ───────────────────────────────────────────────────────────
 
 describe("buildCommands — always visible", () => {
   it("includes workspace.menu command always", () => {
@@ -32,62 +55,36 @@ describe("buildCommands — always visible", () => {
     expect(menu.slash?.aliases).toContain("workspace")
   })
 
-  it("includes workspace.toggle always", () => {
+  it("includes workspace.new always", () => {
     const { api, actions } = setup()
     const cmds = buildCommands(api as never, actions)
-    expect(cmds.find((c) => c.value === "workspace.toggle")).toBeDefined()
-  })
-
-  it("workspace.toggle says 'Enable' when disabled", () => {
-    const { api, actions } = setup({ enabled: false })
-    const cmds = buildCommands(api as never, actions)
-    const toggle = cmds.find((c) => c.value === "workspace.toggle")!
-    expect(toggle.title).toContain("Enable")
-  })
-
-  it("workspace.toggle says 'Disable' when enabled", () => {
-    const { api, actions } = setup({ enabled: true })
-    const cmds = buildCommands(api as never, actions)
-    const toggle = cmds.find((c) => c.value === "workspace.toggle")!
-    expect(toggle.title).toContain("Disable")
-  })
-})
-
-describe("buildCommands — hidden when disabled", () => {
-  it("workspace.new is hidden when disabled", () => {
-    const { api, actions } = setup({ enabled: false })
-    const cmds = buildCommands(api as never, actions)
     const cmd = cmds.find((c) => c.value === "workspace.new")!
-    expect(cmd.hidden).toBe(true)
-    expect(cmd.enabled).toBe(false)
-  })
-
-  it("workspace.manage is hidden when disabled", () => {
-    const { api, actions } = setup({ enabled: false })
-    const cmds = buildCommands(api as never, actions)
-    const cmd = cmds.find((c) => c.value === "workspace.manage")!
-    expect(cmd.hidden).toBe(true)
-  })
-
-  it("workspace.new is visible when enabled", () => {
-    const { api, actions } = setup({ enabled: true })
-    const cmds = buildCommands(api as never, actions)
-    const cmd = cmds.find((c) => c.value === "workspace.new")!
+    expect(cmd).toBeDefined()
     expect(cmd.hidden).toBe(false)
     expect(cmd.enabled).toBe(true)
   })
+
+  it("includes workspace.manage always", () => {
+    const { api, actions } = setup()
+    const cmds = buildCommands(api as never, actions)
+    const cmd = cmds.find((c) => c.value === "workspace.manage")!
+    expect(cmd).toBeDefined()
+    expect(cmd.hidden).toBe(false)
+  })
 })
+
+// ─── Switch command visibility ────────────────────────────────────────────────
 
 describe("buildCommands — switch command visibility", () => {
   it("workspace.switch is hidden when only 1 workspace", () => {
-    const { api, actions } = setup({ enabled: true, workspaces: [localWs as never] })
+    const { api, actions } = setup({ workspaces: [localWs as never] })
     const cmds = buildCommands(api as never, actions)
     const cmd = cmds.find((c) => c.value === "workspace.switch")!
     expect(cmd.hidden).toBe(true)
   })
 
   it("workspace.switch is visible with 2+ workspaces", () => {
-    const { api, actions } = setup({ enabled: true, workspaces: [localWs as never, sandboxWs as never] })
+    const { api, actions } = setup({ workspaces: [localWs as never, sandboxWs as never] })
     const cmds = buildCommands(api as never, actions)
     const cmd = cmds.find((c) => c.value === "workspace.switch")!
     expect(cmd.hidden).toBe(false)
@@ -95,16 +92,18 @@ describe("buildCommands — switch command visibility", () => {
   })
 })
 
+// ─── Sandbox-only commands ────────────────────────────────────────────────────
+
 describe("buildCommands — sandbox-only commands", () => {
   it("workspace.rename is hidden when no current workspace", () => {
-    const { api, actions } = setup({ enabled: true })
+    const { api, actions } = setup()
     const cmds = buildCommands(api as never, actions)
     const cmd = cmds.find((c) => c.value === "workspace.rename")!
     expect(cmd.hidden).toBe(true)
   })
 
   it("workspace.rename is hidden when current workspace is local", () => {
-    const { api, actions } = setup({ enabled: true, workspaces: [localWs as never], currentID: "local" })
+    const { api, actions } = setup({ workspaces: [localWs as never], currentID: "local" })
     const cmds = buildCommands(api as never, actions)
     const cmd = cmds.find((c) => c.value === "workspace.rename")!
     expect(cmd.hidden).toBe(true)
@@ -112,7 +111,6 @@ describe("buildCommands — sandbox-only commands", () => {
 
   it("workspace.rename is visible when current workspace is sandbox", () => {
     const { api, actions } = setup({
-      enabled: true,
       workspaces: [localWs as never, sandboxWs as never],
       currentID: "ws-sandbox-1",
     })
@@ -121,29 +119,13 @@ describe("buildCommands — sandbox-only commands", () => {
     expect(cmd.hidden).toBe(false)
     expect(cmd.enabled).toBe(true)
   })
-
-  it("workspace.reset and workspace.delete follow same rules as rename", () => {
-    const { api, actions } = setup({
-      enabled: true,
-      workspaces: [localWs as never, sandboxWs as never],
-      currentID: "ws-sandbox-1",
-    })
-    const cmds = buildCommands(api as never, actions)
-    expect(cmds.find((c) => c.value === "workspace.reset")?.hidden).toBe(false)
-    expect(cmds.find((c) => c.value === "workspace.delete")?.hidden).toBe(false)
-  })
 })
 
-describe("buildCommands — workspace.session", () => {
-  it("is hidden when disabled", () => {
-    const { api, actions } = setup({ enabled: false })
-    const cmds = buildCommands(api as never, actions)
-    const cmd = cmds.find((c) => c.value === "workspace.session")!
-    expect(cmd.hidden).toBe(true)
-  })
+// ─── workspace.session ────────────────────────────────────────────────────────
 
-  it("is hidden when no currentID even if enabled", () => {
-    const { api, actions } = setup({ enabled: true, workspaces: [localWs as never] })
+describe("buildCommands — workspace.session", () => {
+  it("is hidden when no currentID", () => {
+    const { api, actions } = setup({ workspaces: [localWs as never] })
     const cmds = buildCommands(api as never, actions)
     const cmd = cmds.find((c) => c.value === "workspace.session")!
     expect(cmd.hidden).toBe(true)
@@ -151,7 +133,6 @@ describe("buildCommands — workspace.session", () => {
 
   it("shows workspace name in title when current workspace exists", () => {
     const { api, actions } = setup({
-      enabled: true,
       workspaces: [localWs as never, sandboxWs as never],
       currentID: "ws-sandbox-1",
     })
@@ -161,9 +142,11 @@ describe("buildCommands — workspace.session", () => {
   })
 })
 
+// ─── Categories ───────────────────────────────────────────────────────────────
+
 describe("buildCommands — command categories", () => {
   it("all workspace commands are in 'Workspace' category", () => {
-    const { api, actions } = setup({ enabled: true })
+    const { api, actions } = setup()
     const cmds = buildCommands(api as never, actions)
     for (const cmd of cmds) {
       expect(cmd.category).toBe("Workspace")
@@ -171,9 +154,11 @@ describe("buildCommands — command categories", () => {
   })
 })
 
+// ─── Slash commands ───────────────────────────────────────────────────────────
+
 describe("buildCommands — slash commands", () => {
   it("workspace.manage has /workspaces slash command", () => {
-    const { api, actions } = setup({ enabled: true })
+    const { api, actions } = setup()
     const cmds = buildCommands(api as never, actions)
     const cmd = cmds.find((c) => c.value === "workspace.manage")!
     expect(cmd.slash?.name).toBe("workspaces")
@@ -181,7 +166,7 @@ describe("buildCommands — slash commands", () => {
   })
 
   it("workspace.new has /ws-new slash command", () => {
-    const { api, actions } = setup({ enabled: true })
+    const { api, actions } = setup()
     const cmds = buildCommands(api as never, actions)
     const cmd = cmds.find((c) => c.value === "workspace.new")!
     expect(cmd.slash?.name).toBe("ws-new")
@@ -189,18 +174,11 @@ describe("buildCommands — slash commands", () => {
   })
 })
 
-describe("buildCommands — onSelect invocations", () => {
-  it("workspace.toggle calls actions.setEnabled with toggled value", () => {
-    const { api, actions } = setup({ enabled: false })
-    const spy = vi.spyOn(actions, "setEnabled")
-    const cmds = buildCommands(api as never, actions)
-    const toggle = cmds.find((c) => c.value === "workspace.toggle")!
-    toggle.onSelect?.()
-    expect(spy).toHaveBeenCalledWith(true)
-  })
+// ─── onSelect ────────────────────────────────────────────────────────────────
 
+describe("buildCommands — onSelect invocations", () => {
   it("workspace.manage calls api.route.navigate('workspaces')", () => {
-    const { api, actions } = setup({ enabled: true })
+    const { api, actions } = setup()
     const cmds = buildCommands(api as never, actions)
     const manage = cmds.find((c) => c.value === "workspace.manage")!
     manage.onSelect?.()
