@@ -20,10 +20,10 @@
  */
 
 import type { TuiPlugin, TuiPluginModule } from "@opencode-ai/plugin/tui"
-import { HomeBadge, HomeDashboard, SidebarFooterActions, SidebarWorkspaceList } from "./components.js"
-import { buildCommands } from "./commands.js"
-import { ManageRoute } from "./manage-route.js"
-import { createWsStore } from "./store.js"
+import { HomeBadge, HomeDashboard, SidebarFooterActions, SidebarWorkspaceList } from "./components.tsx"
+import { buildCommands } from "./commands.ts"
+import { ManageRoute } from "./manage-route.tsx"
+import { createWsStore } from "./store.ts"
 
 // ─── Plugin main ──────────────────────────────────────────────────────────────
 

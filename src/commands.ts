@@ -7,9 +7,9 @@ import {
   showSessionsDialog,
   showSwitchDialog,
   showWsMenu,
-} from "./dialogs.js"
-import { isLocal, wsName } from "./helpers.js"
-import type { WsActions } from "./store.js"
+} from "./dialogs.tsx"
+import { isLocal, wsName } from "./helpers.ts"
+import type { WsActions } from "./store.ts"
 
 // ─── Command factory ──────────────────────────────────────────────────────────
 

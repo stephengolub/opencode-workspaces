@@ -1,10 +1,10 @@
 /** @jsxImportSource @opentui/solid */
 import type { TuiPluginApi } from "@opencode-ai/plugin/tui"
 import { For, Show, createMemo } from "solid-js"
-import { STATUS_SYMBOL } from "./constants.js"
-import { showCreateDialog, showSwitchDialog } from "./dialogs.js"
-import { isLocal, shortDir, wsName } from "./helpers.js"
-import type { WsActions } from "./store.js"
+import { STATUS_SYMBOL } from "./constants.ts"
+import { showCreateDialog, showSwitchDialog } from "./dialogs.tsx"
+import { isLocal, shortDir, wsName } from "./helpers.ts"
+import type { WsActions } from "./store.ts"
 
 // ─── Sidebar: workspace list ──────────────────────────────────────────────────
 

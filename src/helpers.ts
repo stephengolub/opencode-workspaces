@@ -1,4 +1,4 @@
-import type { Workspace } from "./types.js"
+import type { Workspace } from "./types.ts"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

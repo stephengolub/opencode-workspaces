@@ -2,10 +2,10 @@
 import type { TuiPluginApi } from "@opencode-ai/plugin/tui"
 import { useKeyboard } from "@opentui/solid"
 import { For, Show, createSignal } from "solid-js"
-import { STATUS_SYMBOL } from "./constants.js"
-import { showCreateDialog, showDeleteDialog, showRenameDialog, showResetDialog } from "./dialogs.js"
-import { isLocal, shortDir, wsName } from "./helpers.js"
-import type { WsActions } from "./store.js"
+import { STATUS_SYMBOL } from "./constants.ts"
+import { showCreateDialog, showDeleteDialog, showRenameDialog, showResetDialog } from "./dialogs.tsx"
+import { isLocal, shortDir, wsName } from "./helpers.ts"
+import type { WsActions } from "./store.ts"
 
 // ─── Full-screen workspace management route ───────────────────────────────────
 

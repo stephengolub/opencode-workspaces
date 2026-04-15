@@ -1,6 +1,6 @@
 {
   "name": "opencode-workspaces",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "TUI workspace management plugin for OpenCode — switch between git worktrees in-session",
   "type": "module",
   "exports": {

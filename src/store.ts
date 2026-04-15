@@ -1,8 +1,8 @@
 import type { TuiPluginApi } from "@opencode-ai/plugin/tui"
 import { createStore, produce } from "solid-js/store"
-import { KV } from "./constants.js"
-import { isLocal, wsName } from "./helpers.js"
-import type { Session, Workspace, WsState } from "./types.js"
+import { KV } from "./constants.ts"
+import { isLocal, wsName } from "./helpers.ts"
+import type { Session, Workspace, WsState } from "./types.ts"
 
 // ─── Store + Actions ──────────────────────────────────────────────────────────
 
