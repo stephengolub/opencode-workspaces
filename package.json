@@ -1,15 +1,16 @@
 {
   "name": "opencode-workspaces",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TUI workspace management plugin for OpenCode — switch between git worktrees in-session",
   "type": "module",
   "exports": {
     "./tui": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.jsx"
+      "import": "./src/index.tsx"
     }
   },
   "files": [
+    "src",
     "dist",
     "README.md",
     "LICENSE"
@@ -33,9 +34,15 @@
     "solid-js": "^1.0.0"
   },
   "peerDependenciesMeta": {
-    "@opentui/core": { "optional": true },
-    "@opentui/solid": { "optional": true },
-    "solid-js": { "optional": true }
+    "@opentui/core": {
+      "optional": true
+    },
+    "@opentui/solid": {
+      "optional": true
+    },
+    "solid-js": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@opencode-ai/sdk": "^1.4.6",
