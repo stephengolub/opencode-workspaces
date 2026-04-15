@@ -1,0 +1,72 @@
+{
+  "name": "opencode-workspaces",
+  "version": "0.1.0",
+  "description": "TUI workspace management plugin for OpenCode — switch between git worktrees in-session",
+  "type": "module",
+  "exports": {
+    "./tui": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.jsx"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "opencode": ">=1.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.4.6"
+  },
+  "peerDependencies": {
+    "@opentui/core": ">=0.1.99",
+    "@opentui/solid": ">=0.1.99",
+    "solid-js": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@opentui/core": { "optional": true },
+    "@opentui/solid": { "optional": true },
+    "solid-js": { "optional": true }
+  },
+  "devDependencies": {
+    "@opencode-ai/sdk": "^1.4.6",
+    "@opentui/core": "0.1.99",
+    "@opentui/solid": "0.1.99",
+    "@types/node": "^22.0.0",
+    "bun-types": "latest",
+    "solid-js": "^1.9.0",
+    "typescript": "^5.8.2",
+    "vitest": "^3.2.4"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stephengolub/opencode-workspaces.git"
+  },
+  "homepage": "https://github.com/stephengolub/opencode-workspaces#readme",
+  "bugs": {
+    "url": "https://github.com/stephengolub/opencode-workspaces/issues"
+  },
+  "license": "MIT",
+  "author": "Stephen Golub <stephen@golub.io>",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "tui",
+    "workspace",
+    "worktree",
+    "git"
+  ]
+}
