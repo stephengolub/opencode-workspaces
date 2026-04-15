@@ -1,3 +1,4 @@
+/** @jsxImportSource @opentui/solid */
 import type { TuiPluginApi } from "@opencode-ai/plugin/tui"
 import { isLocal, relativeTime, wsName } from "./helpers.js"
 import type { WsActions } from "./store.js"

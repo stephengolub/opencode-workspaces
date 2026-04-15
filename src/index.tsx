@@ -1,3 +1,4 @@
+/** @jsxImportSource @opentui/solid */
 /**
  * opencode-workspaces — TUI Workspace Plugin for OpenCode
  *

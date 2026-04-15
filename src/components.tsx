@@ -1,3 +1,4 @@
+/** @jsxImportSource @opentui/solid */
 import type { TuiPluginApi } from "@opencode-ai/plugin/tui"
 import { For, Show, createMemo } from "solid-js"
 import { STATUS_SYMBOL } from "./constants.js"

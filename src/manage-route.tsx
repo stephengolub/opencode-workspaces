@@ -1,3 +1,4 @@
+/** @jsxImportSource @opentui/solid */
 import type { TuiPluginApi } from "@opencode-ai/plugin/tui"
 import { useKeyboard } from "@opentui/solid"
 import { For, Show, createSignal } from "solid-js"
