@@ -64,17 +64,6 @@ export function buildCommands(api: TuiPluginApi, actions: WsActions): TuiCommand
       },
     },
     {
-      title: "Manage workspaces",
-      value: "workspace.manage",
-      category: "Workspace",
-      slash: { name: "workspaces", aliases: ["wsm"] },
-      enabled: true,
-      hidden: false,
-      onSelect() {
-        api.route.navigate("workspaces")
-      },
-    },
-    {
       title: sessionTitle,
       value: "workspace.session",
       category: "Workspace",

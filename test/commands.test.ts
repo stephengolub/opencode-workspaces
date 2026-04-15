@@ -36,6 +36,12 @@ describe("buildCommands — removed commands", () => {
     const cmds = buildCommands(api as never, actions)
     expect(cmds.find((c) => c.value === "workspace.reset")).toBeUndefined()
   })
+
+  it("does NOT include workspace.manage (built-in /workspaces handles this)", () => {
+    const { api, actions } = setup()
+    const cmds = buildCommands(api as never, actions)
+    expect(cmds.find((c) => c.value === "workspace.manage")).toBeUndefined()
+  })
 })
 
 // ─── Always visible ───────────────────────────────────────────────────────────
@@ -64,13 +70,6 @@ describe("buildCommands — always visible", () => {
     expect(cmd.enabled).toBe(true)
   })
 
-  it("includes workspace.manage always", () => {
-    const { api, actions } = setup()
-    const cmds = buildCommands(api as never, actions)
-    const cmd = cmds.find((c) => c.value === "workspace.manage")!
-    expect(cmd).toBeDefined()
-    expect(cmd.hidden).toBe(false)
-  })
 })
 
 // ─── Switch command visibility ────────────────────────────────────────────────
@@ -157,14 +156,6 @@ describe("buildCommands — command categories", () => {
 // ─── Slash commands ───────────────────────────────────────────────────────────
 
 describe("buildCommands — slash commands", () => {
-  it("workspace.manage has /workspaces slash command", () => {
-    const { api, actions } = setup()
-    const cmds = buildCommands(api as never, actions)
-    const cmd = cmds.find((c) => c.value === "workspace.manage")!
-    expect(cmd.slash?.name).toBe("workspaces")
-    expect(cmd.slash?.aliases).toContain("wsm")
-  })
-
   it("workspace.new has /ws-new slash command", () => {
     const { api, actions } = setup()
     const cmds = buildCommands(api as never, actions)
@@ -177,11 +168,11 @@ describe("buildCommands — slash commands", () => {
 // ─── onSelect ────────────────────────────────────────────────────────────────
 
 describe("buildCommands — onSelect invocations", () => {
-  it("workspace.manage calls api.route.navigate('workspaces')", () => {
+  it("workspace.menu calls showWsMenu (dialog.replace)", () => {
     const { api, actions } = setup()
     const cmds = buildCommands(api as never, actions)
-    const manage = cmds.find((c) => c.value === "workspace.manage")!
-    manage.onSelect?.()
-    expect(api.route.navigate).toHaveBeenCalledWith("workspaces")
+    const menu = cmds.find((c) => c.value === "workspace.menu")!
+    menu.onSelect?.()
+    expect(api.ui.dialog.replace).toHaveBeenCalled()
   })
 })
